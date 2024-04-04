@@ -1,18 +1,24 @@
+import { fetchSingleUser } from "@/app/lib/data";
 import styles from "@/app/ui/dashboard/users/singleUser/singleUser.module.css"
 
-const SingleUserPage = () => {
+
+const SingleUserPage = async ({params}) => {
+    const {id} = params;
+    const user = await fetchSingleUser(id);
+ 
+
     return (
         <div className={styles.container}>
             <div className={styles.infoContainer}>
                 <div className={styles.imgContainer}>
-                    <img src="/noavatar.png" alt="" fill />
-                    Alejo Gonzalez
+                    <img src={user.img || "/noavatar.png"} alt="" fill/>
+                    {user.username}
                 </div>
             </div>
             <div className={styles.formContainer}>
                 <form action="">
                     <label>Username</label>
-                    <input type="text" name="username" placeholder="Alejo Gonzalez" />
+                    <input type="text" name="username" placeholder={user.username} />
                     <label>Email</label>
                     <input type="email" name="email" placeholder="Alejo@youarq.com" />
                     <label>Password</label>

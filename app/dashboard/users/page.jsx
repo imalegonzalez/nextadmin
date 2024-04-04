@@ -1,3 +1,4 @@
+import { deleteUser} from "@/app/lib/actions"
 import { fetchUsers } from "@/app/lib/data"
 import Pagination from "@/app/ui/dashboard/pagination/pagination"
 import Search from "@/app/ui/dashboard/search/search"
@@ -6,9 +7,12 @@ import Link from "next/link"
 
 const UsersPage = async ({searchParams}) => {
 
-    const q = searchParams?.q || ""
+    const q = searchParams?.q || "";
+    const page = searchParams?.page || 1;
 
-    const users = await fetchUsers(q)
+    const ITEM_PER_PAGE = 20;
+
+    const {users, count} = await fetchUsers(q, page, ITEM_PER_PAGE)
 
     return (
         <div className={styles.container}>
@@ -44,19 +48,21 @@ const UsersPage = async ({searchParams}) => {
                             <td>{user.isActive? "Activo" : "Desactivado"}</td>
                             <td>
                             <div className={styles.buttons}>
-                                <Link href={`/dashboard/users/${user.username}`}>
+                                <Link href={`/dashboard/users/${user.id}`}>
                                     <button className={`${styles.button} ${styles.view}`}>Ver</button>
                                 </Link>
-                                <Link href="/">
+                                <form action={deleteUser}>
+                                    <input type="hidden" name="id" value={user.id} />
                                     <button className={`${styles.button} ${styles.delete}`}>Borrar</button>
-                                </Link>
+                                </form>
+                                
                             </div>
                             </td>
                         </tr>
                     ))}
                 </tbody>
             </table>
-            <Pagination/>
+            <Pagination ITEM_PER_PAGE={ITEM_PER_PAGE} count={count}/>
         </div>
     )
 }
