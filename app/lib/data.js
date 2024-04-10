@@ -24,7 +24,7 @@ export const fetchSingleUser = async (id) => {
         const user = await User.findById(id);
         
         // console.log(user)
-        return user.toObject()
+        return user
     } catch (error){
         console.log(error);
         throw new Error("No se pudo encontrar usuario por id");

@@ -4,9 +4,9 @@ import { Product, User } from "./models";
 import { connectToDb } from "./utils";
 import { redirect } from "next/navigation";
 import bcrypt from "bcrypt";
+import { signIn } from "../auth";
 
 export const addUser = async (formData) => {
- 
   const { username, email, password, phone, isAdmin, isActive, address } =
     Object.fromEntries(formData);
 
@@ -35,8 +35,41 @@ export const addUser = async (formData) => {
   redirect("/dashboard/users");
 };
 
-export const addProduct = async (formData) => {
+export const updateUser = async (formData) => {
+  const { id, username, email, password, phone, isAdmin, isActive, address } =
 
+    Object.fromEntries(formData);
+
+  try {
+    connectToDb();
+
+    const updateFields = {
+      username,
+      email,
+      password,
+      phone,
+      address,
+      isAdmin,
+      isActive,
+    };
+
+    Object.keys(updateFields).forEach(
+      (key) =>
+      (updateFields[key] ==="" || undefined) && delete updateFields[key]
+    );
+
+    await User.findByIdAndUpdate(id, updateFields)
+
+  } catch (error) {
+    console.log(error);
+    throw new Error("Error al crear usuario");
+  }
+
+  revalidatePath("/dashboard/users");
+  redirect("/dashboard/users");
+};
+
+export const addProduct = async (formData) => {
   const { title, desc, price, stock, color, size } =
     Object.fromEntries(formData);
 
@@ -63,33 +96,43 @@ export const addProduct = async (formData) => {
 };
 
 export const deleteProduct = async (formData) => {
+  const { id } = Object.fromEntries(formData);
 
-    const { id } =
-      Object.fromEntries(formData);
-  
-    try {
-      connectToDb();
-      await Product.findByIdAndDelete(id);
-    } catch (error) {
-      console.log(error);
-      throw new Error("Error al borrar producto");
+  try {
+    connectToDb();
+    await Product.findByIdAndDelete(id);
+  } catch (error) {
+    console.log(error);
+    throw new Error("Error al borrar producto");
+  }
+
+  revalidatePath("/dashboard/products");
+};
+
+export const deleteUser = async (formData) => {
+  const { id } = Object.fromEntries(formData);
+
+  try {
+    connectToDb();
+    await User.findByIdAndDelete(id);
+  } catch (error) {
+    console.log(error);
+    throw new Error("Error al borrar usuario");
+  }
+
+  revalidatePath("/dashboard/products");
+};
+
+export const authenticate = async (prevState,formData) => {
+  const { username, password } = Object.fromEntries(formData);
+  // console.log(password)
+
+  try {
+    await signIn("credentials", { username, password });
+  }  catch (err) {
+    if (err.message.includes("CredentialsSignin")) {
+      return "Wrong Credentials";
     }
-  
-    revalidatePath("/dashboard/products");
-  };
-
-  export const deleteUser = async (formData) => {
-
-    const { id } =
-      Object.fromEntries(formData);
-  
-    try {
-      connectToDb();
-      await User.findByIdAndDelete(id);
-    } catch (error) {
-      console.log(error);
-      throw new Error("Error al borrar usuario");
-    }
-  
-    revalidatePath("/dashboard/products");
-  };
+    throw err;
+  }
+};

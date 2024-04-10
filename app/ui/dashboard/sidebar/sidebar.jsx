@@ -1,3 +1,4 @@
+import { auth, signOut } from "@/app/auth";
 import MenuLink from "./menuLink/menuLink";
 import styles from "./sidebar.module.css"
 import {
@@ -77,13 +78,15 @@ const menuItems = [
       },
 ];
 
-const Sidebar = () => {
+const Sidebar = async () => {
+    const session = await auth();
+    console.log(session)
     return (
         <div className={styles.container}>
             <div className={styles.user}>
-                <img  src="/noavatar.png" alt="" width="50" height="50" className={styles.userImage}/>
+                <img  src={session.img || "/noavatar.png"} alt="" width="50" height="50" className={styles.userImage}/>
                 <div className={styles.userDetail}>
-                    <span className={styles.username}>Alejo Gonzalez</span>
+                    <span className={styles.username}>{session.username}</span>
                     <span className={styles.userTitle}>Administrador</span>
                 </div>
             </div>
@@ -97,9 +100,15 @@ const Sidebar = () => {
                     </li>
                 ))}
             </ul>
-            <button className={styles.logout}>
-              <MdLogout/>
-              Logout</button>
+            <form action={async () =>{
+              "use server"
+              await signOut();
+            }}>
+              
+              <button className={styles.logout}>
+                <MdLogout/>
+                Logout</button>
+            </form>
         </div>
     )
 }
